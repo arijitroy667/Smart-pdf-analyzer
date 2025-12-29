@@ -18,7 +18,8 @@ load_dotenv()
 search_tool = DuckDuckGoSearchRun()
 
 #llm
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
+api_key = st.secrets["GOOGLE_API_KEY"]
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite",api_key=api_key)
 
 def pdf_text_extractor(file) -> str:
     """Extract text from a PDF file or file-like object."""
