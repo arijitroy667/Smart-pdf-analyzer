@@ -1,7 +1,11 @@
 streamlit
 langchain_community
 langchain
-langchain_google_genai
+langchain-core
+langchain-google-genai
+google-generativeai
 PyPDF2
 dotenv
 ddgs
+faiss-cpu
+tiktoken
