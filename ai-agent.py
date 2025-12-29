@@ -66,7 +66,8 @@ def retrieve_web_context(query: str) -> str:
 def retrieve_contexts(vector_store: FAISS, query: str):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         pdf_future = executor.submit(retrieve_pdf_context, vector_store, query)
-        web_future = executor.submit(retrieve_web_context, query)
+        response = str(model.invoke("Generate a proper web-search query for the following user query: " + query))
+        web_future = executor.submit(retrieve_web_context, response)
 
         pdf_context = pdf_future.result()
         web_context = web_future.result()
@@ -126,7 +127,7 @@ Answer:
 # print("Answer:", answer)
 
 # Streamlit UI
-st.title("PDF Reader & Explainer")
+st.title("Smarty Contextual PDF Reader")
 
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 if uploaded_file:
