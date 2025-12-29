@@ -7,3 +7,4 @@ google-generativeai
 PyPDF2
 dotenv
 ddgs
+faiss-cpu
