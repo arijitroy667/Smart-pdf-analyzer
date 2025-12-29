@@ -7,7 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.documents import Document
 from PyPDF2 import PdfReader
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 import concurrent.futures
 
 import requests
@@ -43,13 +43,13 @@ def text_splitter(text: str, chunk_size: int ,  overlap: int) -> list:
 
     return chunks
 
-def embeddings_vector_store(chunks: list) -> FAISS:
+def embeddings_vector_store(chunks: list):
     """Generate embeddings for each text chunk and store in vector database."""
     embedding_model = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
-    vector_store = FAISS.from_documents(chunks, embedding_model)
+    vector_store = Chroma.from_documents(chunks, embedding_model)
     return vector_store
 
-def retrieve_pdf_context(vector_store: FAISS, query: str, k: int = 4) -> str:
+def retrieve_pdf_context(vector_store: Chroma, query: str, k: int = 4) -> str:
     retriever = vector_store.as_retriever(
         search_type="similarity",
         search_kwargs={"k": k}
@@ -63,7 +63,7 @@ def retrieve_web_context(query: str) -> str:
     except Exception:
         return "No relevant web results found."
 
-def retrieve_contexts(vector_store: FAISS, query: str):
+def retrieve_contexts(vector_store: Chroma, query: str):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         pdf_future = executor.submit(retrieve_pdf_context, vector_store, query)
         response = str(model.invoke("Generate a proper web-search query for the following user query: " + query))
@@ -76,7 +76,7 @@ def retrieve_contexts(vector_store: FAISS, query: str):
 
 
 # Main function to upload PDF and process
-def pdf_upload_and_process(file_path: str)->  FAISS:
+def pdf_upload_and_process(file_path: str):
     """Upload PDF, extract text, split into chunks, generate embeddings and store in vector DB."""
     text = pdf_text_extractor(file_path)
     text_chunks = text_splitter(text, chunk_size=1000, overlap=200)
@@ -85,7 +85,7 @@ def pdf_upload_and_process(file_path: str)->  FAISS:
     return vector_store
 
 #function to process query and retrieve contextual answer
-def query_hybrid_rag(vector_store: FAISS, query: str) -> str:
+def query_hybrid_rag(vector_store: Chroma, query: str) -> str:
     pdf_context, web_context = retrieve_contexts(vector_store, query)
 
     prompt = PromptTemplate(
